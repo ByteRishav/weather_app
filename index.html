@@ -1,120 +1,105 @@
-<!-- block element in html -->
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Weather App</title>
 
     <style>
-        body{
+        body {
             text-align: center;
             margin: 20px;
-            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
         }
 
         #weather-info,
-        #forecast{
+        #forecast {
             margin-top: 20px;
             padding: 10px;
             border: 2px solid black;
             display: none;
-            
+        }
 
-            /* js ki help se change karenge */
-
+        .forecast-item {
+            border: 2px solid black;
+            padding: 10px;
+            margin: 10px;
+            display: inline-block;
         }
     </style>
 </head>
-<body>
-     <h1>Weather App</h1>
-     <input type="text" name = "city" id="city-input">
-     <button onclick="getWeatherByCity()">Get Weather</button>
 
-     <!-- js ki help se add -->
-      <div id="weather-info">
+
+<body>
+    <h1>Weather App</h1>
+    <input type="text" name="city" id="city-input">
+    <button onclick=getWeatherByCity()>Get Weather</button>
+
+    <div id="weather-info">
         <h2 id="city-name"></h2>
-        <p id="temp"></p>
+        <p id="temp"> </p>
         <p id="desc"></p>
         <p id="wind-speed"></p>
         <img src="" id="weather-icon" alt="">
-      </div>
+    </div>
 
-      <!--  js ki help se poora HTML -->
+    <h2>5 day forecast</h2>
+    <div id="forecast">
+        <!-- js se innerHTML -->
+    </div>
 
-      <h2>5 day forecast</h2>
-      <div id="forecast"></div>
+    <script>
+        const apiKey = "4f5bc2c384b043fdbc9133501250103"
 
-
-
-
-      <script>
-        const apiKey = '4f5bc2c384b043fdbc9133501250103' 
-
-        const getLocationandWeather = () => {
-            // navigator is an like library and geolocation is feature of that and getCurrentPosition is function inside this library
-            // its work is to get the longitude and latitude
-
-
-            // how this function is working :
-            // navigator.geolocation.getCurrentPosition is finding my current Location
-            // and that location is loadid into the pos parameter ( if there was two parameter than there would be an paranthesis)
-            
-            if(navigator.geolocation){  // means if location ko allow kiya hai user ne notification per than coordinates show karo
+        const getLocationAndWeather = () => {
+            if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(pos => {
-                const lat = pos.coords.latitude;
-                const long = pos.coords.longitude;
-                console.log(lat,long);
-            })
-            }else{
-                alert("location can't be provided at this moment")
+                    const lat = pos.coords.latitude;
+                    const long = pos.coords.longitude;
+                    console.log(lat, long);
+                    fetchWeather(lat, long);
+                })
+            }
+            else {
+                alert("Geolocation is not supported by this browser.");
             }
         }
-        
-        const fetchWeather = async(lat,long) =>{
-            const weatherUrl = `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${lat},${long}&days=5&aqi=no&alerts=no;
-`
 
-            try{
-                // api kaaam kar gaya and result aahaya mere paas
-                // tum yha per ruk jao tab tak main weather leke ata hoon
+        const fetchWeather = async (lat, long) => {
+            const weatherUrl = `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${lat},${long}&days=5&aqi=no&alerts=no`;
+            try {
                 const res = await fetch(weatherUrl);
                 const data = await res.json();
                 console.log(data);
                 displayWeather(data);
             }
-            catch(error){
+            catch (error) {
                 console.log(error);
                 alert("unable to reach server at this moment");
             }
         }
 
-        const getWeatherByCity = async() =>{
-            const city = document.getElementById("city-input").value
-            // if i not take the value attribute than i'll get entire input field
-            
-            
-            console.log(city)
-
-            if(!city){
-                alert("enter the city name ")
+        const getWeatherByCity = async () => {
+            // value le rha hu html se
+            const city = document.getElementById("city-input").value;
+            console.log(city);
+            if (!city) {
+                alert("Please enter a city name");
                 return;
             }
-
-            const weatherUrl = `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${city}&days=5&aqi=no&alerts=no`;
-            try{
+            const weatherUrl = `https://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${city}&days=5&aqi=no&alerts=no`
+            try {
                 const res = await fetch(weatherUrl);
                 const data = await res.json();
                 console.log(data);
                 displayWeather(data);
-
-            }catch(error){
-                console.log(error)
-                alert("server is not found at this moment")
+            }
+            catch (error) {
+                console.log(error);
+                alert("unable to reach server at this moment");
             }
         }
-
 
         const displayWeather = (data) => {
             document.getElementById("city-name").textContent = data.location.name;
@@ -122,48 +107,30 @@
             document.getElementById("desc").textContent = data.current.condition.text;
             document.getElementById("wind-speed").textContent =  data.current.wind_kph;
             document.getElementById("weather-icon").src = data.current.condition.icon;
-            document.getElementById("weather-info").style.display = "block"; // yani ab show hoga
+            document.getElementById("weather-info").style.display = "block";
 
-            displayForecast(data.forecast.forecastday)
-
+            document.getElementById("weather-info").style.display = "block";
+            displayForecast(data.forecast.forecastday);
         }
 
-        const displayForecast = (data) =>{
-            const forecastContainer = document.getElementById("forecast")
-
-            // now i am resting the innerhtml of id or container so that on reloading my new content should reflect
+        const displayForecast = (data) => {
+            const forecastContainer = document.getElementById("forecast");
             forecastContainer.innerHTML = '';
-
-            console.log(data);
-
-                data.forEach(element =>{
-                    console.log("chala1")
+            data.forEach(element => {
                 const forecastItem = document.createElement("div");
-                console.log("chala2")
-                forecastItem.className = "forecast-item"
-                console.log("chala3")
+                forecastItem.className = "forecast-item";
                 forecastItem.innerHTML = `
-                <h3>${element.date}</h3>
-                <p>${element.day.avgtemp_c}</p>
-                <p>${element.day.condition.text}</p>
-                <img src ="${element.day.condition.icon}" alt = "${element.day.condition.text}">
+                    <h3>${element.date}</h3>
+                    <p>${element.day.avgtemp_c}</p>
+                    <p>${element.day.condition.text}</p>
+                    <img src="${element.day.condition.icon}" alt="${element.day.condition.text}">
                 `
-                console.log("chala4")
                 forecastContainer.appendChild(forecastItem);
-                console.log("chala5")
-            })
-
-
-
-
-
-
-            
-            forecastContainer.style.display = "inline";
-
+            });
+            forecastContainer.style.display = "block";
         }
-
-        window.onload = getLocationandWeather;
-      </script>
+        window.onload = getLocationAndWeather;
+    </script>
 </body>
-</html> 
+
+</html>
